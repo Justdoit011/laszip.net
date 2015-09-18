@@ -1430,36 +1430,51 @@ namespace laszip.net
 			return 0;
 		}
 
-		public int laszip_open_reader(string file_name, ref bool is_compressed)
+        public int laszip_open_reader(string file_name, ref bool is_compressed)
+        {
+            if (file_name == null || file_name.Length == 0)
+            {
+                error = "file_name pointer is zero";
+                return 1;
+            }
+
+            if (writer != null)
+            {
+                error = "writer is already open";
+                return 1;
+            }
+
+            if (reader != null)
+            {
+                error = "reader is already open";
+                return 1;
+            }
+
+            Stream stream = null;
+
+            // open the file
+            try
+            {
+                stream = File.OpenRead(file_name);
+            }
+            catch
+            {
+                error = string.Format("cannot open file '{0}'", file_name);
+                return 1;
+            }
+
+            return laszip_open_reader(stream, ref is_compressed);
+        }
+
+        public int laszip_open_reader(Stream stream, ref bool is_compressed)
 		{
-			if(file_name==null||file_name.Length==0)
-			{
-				error="file_name pointer is zero";
-				return 1;
-			}
+            if (stream == null)
+            {
+                error = "file stream is empty";
+                return 1;
+            }
 
-			if(writer!=null)
-			{
-				error="writer is already open";
-				return 1;
-			}
-
-			if(reader!=null)
-			{
-				error="reader is already open";
-				return 1;
-			}
-
-			// open the file
-			try
-			{
-				streamin=File.OpenRead(file_name);
-			}
-			catch
-			{
-				error=string.Format("cannot open file '{0}'", file_name);
-				return 1;
-			}
+            streamin = stream;
 
 			try
 			{
